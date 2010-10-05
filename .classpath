@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="metronome-applet/src/main/java"/>
+	<classpathentry kind="lib" path="metronome-applet/target/metronome-applet-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="metronome-webapp/target/applet/metronome-applet-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="metronome-webapp/target/metronome-webapp-1.0-SNAPSHOT/metronome-applet-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="eclipse-build"/>
+</classpath>

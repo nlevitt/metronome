@@ -45,7 +45,7 @@ class MetronomePanel extends JPanel {
 	
 	private JToggleButton onOffButton;
 	private JSpinner tempoSpinner;
-	private JLabel jLabel5;
+	private JLabel beatValueLabel;
 	private JPanel jPanel1;
 	private JLabel timesigTopLabel;
 	private JLabel timesigBottomLabel;
@@ -56,7 +56,7 @@ class MetronomePanel extends JPanel {
 	private JRadioButton tockValueRadioButton;
 	private JComboBox beatValueCombo;
 	private JSpinner beatsPerMeasureSpinner;
-	private JLabel jLabel3;
+	private JLabel beatsPerMeasureLabel;
 	private JLabel jLabel2;
 	private DefaultComboBoxModel beatValueComboModel;
 	private SpinnerNumberModel beatsPerMeasureSpinnerModel;
@@ -284,16 +284,16 @@ class MetronomePanel extends JPanel {
 					beatValueCombo = new JComboBox(beatValueComboModel);
 				}
 				{
-					beatsPerMeasureSpinnerModel = new SpinnerNumberModel(4, 1, MAX_BEATS_PER_MEASURE, 1);
+					beatsPerMeasureSpinnerModel = new SpinnerNumberModel(metronome.getBeatsPerMeasure(), 1, MAX_BEATS_PER_MEASURE, 1);
 					beatsPerMeasureSpinner = new JSpinner();
 					beatsPerMeasureSpinner.setModel(beatsPerMeasureSpinnerModel);
 				}
 				{
-					jLabel3 = new JLabel();
-					this.add(jLabel3, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-					this.add(beatsPerMeasureSpinner, new GridBagConstraints(2, 8, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+					beatsPerMeasureLabel = new JLabel();
+					this.add(beatsPerMeasureLabel, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+					this.add(beatsPerMeasureSpinner, new GridBagConstraints(2, 7, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 					beatsPerMeasureSpinner.setFont(new java.awt.Font("Dialog",0,14));
-					this.add(beatValueCombo, new GridBagConstraints(2, 7, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+					this.add(beatValueCombo, new GridBagConstraints(2, 8, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 					beatValueCombo.setFont(new java.awt.Font("Dialog",0,14));
 					this.add(jLabel1, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 					jLabel1.setFont(new java.awt.Font("Dialog",0,14));
@@ -310,10 +310,10 @@ class MetronomePanel extends JPanel {
 						jLabel2.setFont(new java.awt.Font("Dialog",0,14));
 					}
 					{
-						jLabel5 = new JLabel();
-						this.add(jLabel5, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-						jLabel5.setText("Beat value:");
-						jLabel5.setFont(new java.awt.Font("Dialog",0,14));
+						beatValueLabel = new JLabel();
+						this.add(beatValueLabel, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+						beatValueLabel.setText("Beat value:");
+						beatValueLabel.setFont(new java.awt.Font("Dialog",0,14));
 					}
 					{
 						tockValueRadioButton = new JRadioButton();
@@ -339,7 +339,7 @@ class MetronomePanel extends JPanel {
 					{
 						title = new JLabel();
 						this.add(title, new GridBagConstraints(0, 1, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-						title.setText("Dr. Beets Presents: The Confusing Metronome.");
+						title.setText("The Confusing Metronome.");
 						title.setFont(new java.awt.Font("Dialog",1,18));
 					}
 					{
@@ -351,21 +351,21 @@ class MetronomePanel extends JPanel {
 					{
 						timesigBottomLabel = new JLabel();
 						this.add(timesigBottomLabel, new GridBagConstraints(4, 6, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(-6, 0, 0, 0), 0, 0));
-						timesigBottomLabel.setText("4");
+						timesigBottomLabel.setText("" + metronome.getBeatValue().numericValue());
 						timesigBottomLabel.setFont(new java.awt.Font("Dialog",1,18));
 						// timesigBottomLabel.setForeground(new java.awt.Color(0,159,25));
 					}
 					{
 						timesigTopLabel = new JLabel();
 						this.add(timesigTopLabel, new GridBagConstraints(4, 5, 1, 1, 0.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-						timesigTopLabel.setText("4");
+						timesigTopLabel.setText(""+ metronome.getBeatsPerMeasure());
 						timesigTopLabel.setFont(new java.awt.Font("Dialog",1,18));
 						// timesigTopLabel.setForeground(new java.awt.Color(0,159,25));
 					}
 					{
 						jPanel1 = new JPanel();
 						FlowLayout jPanel1Layout = new FlowLayout();
-						jPanel1Layout.setHgap(-10);
+						jPanel1Layout.setHgap(0);
 						jPanel1.setLayout(jPanel1Layout);
 						this.add(jPanel1, new GridBagConstraints(0, 13, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
 						{
@@ -377,8 +377,8 @@ class MetronomePanel extends JPanel {
 						}
 
 					}
-					jLabel3.setText("Beats per measure:");
-					jLabel3.setFont(new java.awt.Font("Dialog",0,14));
+					beatsPerMeasureLabel.setText("Beats per measure:");
+					beatsPerMeasureLabel.setFont(new java.awt.Font("Dialog",0,14));
 				}
 				thisLayout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0};
 				thisLayout.rowHeights = new int[] {15, 15, 25, 11, 25, 10, 5, 15, 13, 25, 13, 25, 14, 12, 7, 25};

@@ -11,10 +11,42 @@
 
 	<head>
 		<title> The Confusing Metronome. </title>
+		<style>
+			html, body { background-color:#000; color:#fff }
+		</style>
 	</head>
 
 	<body>
-		<h1> The Confusing Metronome. </h1>
+
+		<table>
+			<tr>
+				<td style="width:20%">
+					what the fuck is this anyway
+				</td>
+				<td>
+					<applet code="org.pseudorandom.metronome.MetronomeApplet" 
+						archive="metronome-applet-1.0-SNAPSHOT.jar"
+						width="700" height="550">
+						<param name="tempoBpm" value="101" />
+						<param name="beatsPerMeasure" value="2" />
+						<param name="beatValue" value="QUARTER_NOTE" />
+						<!-- param name="emphasizeBeats" value="101" -->
+						<param name="tockValue" value="SIXTEENTH_NOTE" />
+
+						<h1> The Confusing Metronome. </h1>
+						<p>
+							Your browser doesn't seem to support java applets.
+							That's understandable, but this is one of those rare
+							cases where it makes sense. Fortunately, you can try
+							this instead: <a href="?">run with java web start</a>
+						</p>
+					</applet>
+				</td>
+				<td style="width:20%">
+					your mom smells
+				</td>
+			</tr>
+		</table>
 	</body>
 </html>
 

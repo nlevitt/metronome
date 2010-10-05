@@ -182,7 +182,7 @@ public class MidiMetronome {
 		return event;
 	}
 
-	protected void setTempoBpm(double bpm) throws InvalidMidiDataException {
+	public void setTempoBpm(double bpm) throws InvalidMidiDataException {
 		this.tempoBpm = bpm;
 		maybeRestart();
 

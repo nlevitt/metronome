@@ -15,7 +15,6 @@ public class MetronomeApplet extends JApplet {
 	protected MidiMetronome metronome;
 	
 	public MetronomeApplet() throws InvalidMidiDataException, MidiUnavailableException {
-		this.setSize(429, 163);
 		metronome = new MidiMetronome();
 	}
 
@@ -36,9 +35,33 @@ public class MetronomeApplet extends JApplet {
 	public void init() {
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
-                public void run() {
-                	MetronomePanel panel = new MetronomePanel(metronome);
-                	
+            	public void run() {
+            		try {
+            			if (getParameter("tempoBpm") != null) {
+            				metronome.setTempoBpm(Double.parseDouble(getParameter("tempoBpm")));
+            			}
+            			if (getParameter("beatsPerMeasure") != null) {
+            				metronome.setBeatsPerMeasure(Integer.parseInt(getParameter("beatsPerMeasure")));
+            			}
+            			if (getParameter("beatValue") != null) {
+            				metronome.setBeatValue(NoteValue.valueOf(getParameter("beatValue")));
+            			}
+            			if (getParameter("emphasizeBeats") != null) {
+            				String[] n = getParameter("emphasizeBeats").split("[0-9]+");
+            				Integer[] beats = new Integer[n.length];
+            				for (int i = 0; i < n.length; i++) {
+            					beats[i] = Integer.parseInt(n[i]);
+            				}
+            				metronome.setEmphasizeBeats(beats);
+            			}
+            			if (getParameter("tockValue") != null) {
+            				metronome.setTockValue(NoteValue.valueOf(getParameter("tockValue")));
+            			}
+            		} catch (Exception e) { 
+            			e.printStackTrace();
+            		}
+
+            		MetronomePanel panel = new MetronomePanel(metronome);
                     panel.setOpaque(true); 
                     setContentPane(panel);
                 }
