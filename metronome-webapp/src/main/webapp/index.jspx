@@ -1,0 +1,20 @@
+<html lang="en" xml:lang="en" 
+	xmlns="http://www.w3.org/1999/xhtml" 
+	xmlns:jsp="http://java.sun.com/JSP/Page"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
+	xmlns:c="http://java.sun.com/jsp/jstl/core">
+
+	<jsp:directive.page contentType="text/html" />
+	<jsp:output doctype-root-element="html"
+		doctype-public="-//W3C//DTD XHTML 1.0 Strict//EN"
+		doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
+
+	<head>
+		<title> The Confusing Metronome. </title>
+	</head>
+
+	<body>
+		<h1> The Confusing Metronome. </h1>
+	</body>
+</html>
+
