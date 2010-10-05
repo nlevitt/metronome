@@ -5,7 +5,6 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.swing.JApplet;
 import javax.swing.SwingUtilities;
 
-import org.pseudorandom.metronome.MidiMetronome.NoteValue;
 
 
 public class MetronomeApplet extends JApplet {

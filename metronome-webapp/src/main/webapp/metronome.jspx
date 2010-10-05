@@ -13,6 +13,7 @@
 		<title> The Confusing Metronome. </title>
 		<style>
 			html, body { background-color:#000; color:#fff }
+			a { color:#fff; } 
 		</style>
 	</head>
 
@@ -22,16 +23,28 @@
 			<tr>
 				<td style="width:20%">
 					what the fuck is this anyway
+					<ul>
+						<li> <a href="?bpm=101&amp;amp;beats=2&amp;amp;beat=4&amp;amp;tock=8">2/4 101bpm</a> </li>
+						<li> <a href="?bpm=320&amp;amp;beats=5&amp;amp;beat=8&amp;amp;emp=1,3">paidushko</a> </li>
+					</ul>
+					bpm=${bpm}
+					beats=${bpm}
+					emp=${emp}
+					beat=${beat}
+					tock=${tock}
 				</td>
 				<td>
 					<applet code="org.pseudorandom.metronome.MetronomeApplet" 
 						archive="metronome-applet-1.0-SNAPSHOT.jar"
 						width="700" height="550">
-						<param name="tempoBpm" value="101" />
-						<param name="beatsPerMeasure" value="2" />
-						<param name="beatValue" value="QUARTER_NOTE" />
-						<!-- param name="emphasizeBeats" value="101" -->
-						<param name="tockValue" value="SIXTEENTH_NOTE" />
+
+						<param name="tempoBpm" value="${bpm}" />
+						<param name="beatsPerMeasure" value="${beats}" />
+						<param name="beatValue" value="${beat}" />
+						<c:if test="${not empty emp}">
+							<param name="emphasizeBeats" value="${emp}" />
+						</c:if>
+						<param name="tockValue" value="${tock}" />
 
 						<h1> The Confusing Metronome. </h1>
 						<p>

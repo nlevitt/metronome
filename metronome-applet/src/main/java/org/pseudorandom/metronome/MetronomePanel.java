@@ -23,7 +23,6 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.pseudorandom.metronome.MidiMetronome.NoteValue;
 
 
 /**
