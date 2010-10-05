@@ -45,16 +45,16 @@ public class MetronomeApplet extends JApplet {
             			if (getParameter("beatValue") != null) {
             				metronome.setBeatValue(NoteValue.valueOf(getParameter("beatValue")));
             			}
-            			if (getParameter("emphasizeBeats") != null) {
-            				String[] n = getParameter("emphasizeBeats").split("[0-9]+");
-            				Integer[] beats = new Integer[n.length];
-            				for (int i = 0; i < n.length; i++) {
-            					beats[i] = Integer.parseInt(n[i]);
-            				}
-            				metronome.setEmphasizeBeats(beats);
-            			}
             			if (getParameter("tockValue") != null) {
             				metronome.setTockValue(NoteValue.valueOf(getParameter("tockValue")));
+            			}
+            			if (getParameter("emphasizeBeats") != null) {
+            				String[] strBeats = getParameter("emphasizeBeats").split("[0-9]+");
+            				Integer[] beats = new Integer[strBeats.length];
+            				for (int i = 0; i < strBeats.length; i++) {
+            					beats[i] = Integer.parseInt(strBeats[i]);
+            				}
+            				metronome.setEmphasizeBeats(beats);
             			}
             		} catch (Exception e) { 
             			e.printStackTrace();
