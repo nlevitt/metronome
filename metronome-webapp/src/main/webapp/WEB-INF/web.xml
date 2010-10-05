@@ -2,6 +2,17 @@
 
 <web-app xmlns="http://java.sun.com/xml/ns/j2ee" version="2.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_5.xsd">
+
+	<servlet>
+		<servlet-name>metronome-servlet</servlet-name>
+		<servlet-class>org.pseudorandom.metronome.MetronomeServlet</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>metronome-servlet</servlet-name>
+		<url-pattern>/metronome</url-pattern>
+	</servlet-mapping>
+
 	<welcome-file-list>
 		<welcome-file>index.jspx</welcome-file>
 	</welcome-file-list>

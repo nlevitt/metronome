@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="metronome-applet/src/main/java"/>
-	<classpathentry kind="lib" path="metronome-applet/target/metronome-applet-1.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="metronome-webapp/target/applet/metronome-applet-1.0-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="metronome-webapp/target/metronome-webapp-1.0-SNAPSHOT/metronome-applet-1.0-SNAPSHOT.jar"/>
+	<classpathentry kind="src" path="metronome-webapp/src/main/java"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="var" path="M2_REPO/javax/servlet/servlet-api/2.5/servlet-api-2.5.jar" sourcepath="/M2_REPO/javax/servlet/servlet-api/2.5/servlet-api-2.5-sources.jar"/>
+	<classpathentry kind="var" path="M2_REPO/org/eclipse/jetty/jetty-server/8.0.0.M0/jetty-server-8.0.0.M0.jar" sourcepath="/M2_REPO/org/eclipse/jetty/jetty-server/8.0.0.M0/jetty-server-8.0.0.M1-sources.jar"/>
 	<classpathentry kind="output" path="eclipse-build"/>
 </classpath>
