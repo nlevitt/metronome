@@ -1,5 +1,7 @@
 package org.pseudorandom.metronome;
 
+import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -9,6 +11,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.LinkedList;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -24,7 +28,6 @@ import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-
 
 class MetronomePanel extends JPanel {
 	protected static final int MAX_BEATS_PER_MEASURE = 32;
@@ -46,12 +49,16 @@ class MetronomePanel extends JPanel {
 	private DefaultComboBoxModel beatValueComboModel;
 	private DefaultComboBoxModel tockValueComboModel;
 	private JRadioButton emphasizeBeatsRadioButton;
+	private JLabel link;
 	private JCheckBox[] emphasizeBeatsCheckboxes;
 
-	protected MetronomePanel(MidiMetronome nome) {
+	private MetronomeApplet applet;
+
+	protected MetronomePanel(MetronomeApplet applet, MidiMetronome nome) {
 		super();
 
-		metronome = nome;
+		this.applet = applet;
+		this.metronome = nome;
 		
 		initGUI();
 
@@ -120,6 +127,17 @@ class MetronomePanel extends JPanel {
 				}
 			});
 		}
+		
+		// link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+		link.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		link.addMouseListener(new MouseAdapter() {
+//			public void mouseEntered(MouseEvent e) {
+//			}
+			
+			public void mouseClicked(MouseEvent e) {
+				MetronomePanel.this.applet.openLink();
+			}
+		});
 	}
 
 	protected void setEmphasizeBeatsFromCheckboxes() {
@@ -242,70 +260,75 @@ class MetronomePanel extends JPanel {
 
 	private void initGUI() {
 		try {
-			Font defaultFont = new Font("Dialog",0,14);
-			
 			GridBagLayout layout = new GridBagLayout();
 			this.setLayout(layout);
+
 			layout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0};
 			layout.rowHeights = new int[] {15, 15, 25, 11, 25, 10, 5, 15, 13, 25, 13, 25, 14, 12, 7, 25};
 			layout.columnWeights = new double[] {0.1, 0.0, 0.0, 0.0, 0.1};
 			layout.columnWidths = new int[] {7, 10, 53, 10, 7};
 
 			JLabel title = new JLabel("The Confusing Metronome.");
-			title.setFont(new Font("Dialog",1,18));
+
+			// set our preferred font based on default e.g. 12pt becomes 14pt
+			Font defaultFont = title.getFont();
+			Font ourPlainFont = defaultFont.deriveFont(defaultFont.getSize() * 7f / 6f);  
+			Font bigFont = ourPlainFont.deriveFont(ourPlainFont.getSize() * 18f / 14f);
+
+			title.setFont(bigFont);
 			this.add(title, new GridBagConstraints(0, 1, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
 			JLabel tempoLabel = new JLabel("Tempo:");
-			tempoLabel.setFont(defaultFont);
+			tempoLabel.setFont(ourPlainFont);
 			this.add(tempoLabel, new GridBagConstraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			SpinnerNumberModel tempoSpinnerModel = new SpinnerNumberModel(100, 1, 999, 1);
 			tempoSpinner = new JSpinner(tempoSpinnerModel);
-			tempoSpinner.setFont(defaultFont);
+			tempoSpinner.setFont(ourPlainFont);
 			this.add(tempoSpinner, new GridBagConstraints(2, 3, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			JLabel tempoBpmLabel = new JLabel("BPM");
-			tempoBpmLabel.setFont(defaultFont);
+			tempoBpmLabel.setFont(ourPlainFont);
 			this.add(tempoBpmLabel, new GridBagConstraints(4, 3, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			
 			JLabel timesigLabel = new JLabel("Time signature:");
-			timesigLabel.setFont(new Font("Dialog",1,14));
+			timesigLabel.setFont(ourPlainFont);
 			this.add(timesigLabel, new GridBagConstraints(0, 5, 3, 2, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			
 			timesigBottomLabel = new JLabel("" + metronome.getBeatValue().numericValue());
-			timesigBottomLabel.setFont(new Font("Dialog",1,18));
+			timesigBottomLabel.setFont(bigFont);
 			timesigTopLabel = new JLabel(""+ metronome.getBeatsPerMeasure());
-			timesigTopLabel.setFont(new Font("Dialog",1,18));
+			timesigTopLabel.setFont(bigFont);
 			this.add(timesigTopLabel, new GridBagConstraints(4, 5, 1, 1, 0.0, 0.0, GridBagConstraints.SOUTHWEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			this.add(timesigBottomLabel, new GridBagConstraints(4, 6, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(-6, 0, 0, 0), 0, 0));
 			
 			beatsPerMeasureLabel = new JLabel("Beats per measure:");
-			beatsPerMeasureLabel.setFont(defaultFont);
+			beatsPerMeasureLabel.setFont(ourPlainFont);
 			this.add(beatsPerMeasureLabel, new GridBagConstraints(0, 7, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			SpinnerNumberModel beatsPerMeasureSpinnerModel = new SpinnerNumberModel(metronome.getBeatsPerMeasure(), 1, MAX_BEATS_PER_MEASURE, 1);
 			beatsPerMeasureSpinner = new JSpinner(beatsPerMeasureSpinnerModel);
-			beatsPerMeasureSpinner.setFont(defaultFont);
+			beatsPerMeasureSpinner.setFont(ourPlainFont);
 			this.add(beatsPerMeasureSpinner, new GridBagConstraints(2, 7, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			
 			JLabel beatValueLabel = new JLabel("Beat value:");
 			this.add(beatValueLabel, new GridBagConstraints(0, 8, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			beatValueLabel.setFont(defaultFont);
+			beatValueLabel.setFont(ourPlainFont);
 			beatValueComboModel = new DefaultComboBoxModel(NoteValue.values());
 			beatValueCombo = new JComboBox(beatValueComboModel);
-			beatValueCombo.setFont(defaultFont);
+			beatValueCombo.setFont(ourPlainFont);
 			this.add(beatValueCombo, new GridBagConstraints(2, 8, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			
 			tockValueRadioButton = new JRadioButton("Ghost beats:");
 			this.add(tockValueRadioButton, new GridBagConstraints(0, 10, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			tockValueRadioButton.setFont(defaultFont);
+			tockValueRadioButton.setFont(ourPlainFont);
 			tockValueComboModel = new DefaultComboBoxModel();
 			updateTockValueChoices(metronome.getBeatValue());
 			tockValueCombo = new JComboBox();
-			tockValueCombo.setFont(defaultFont);
+			tockValueCombo.setFont(ourPlainFont);
 			tockValueCombo.setModel(tockValueComboModel);
 			this.add(tockValueCombo, new GridBagConstraints(2, 10, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
 			emphasizeBeatsRadioButton = new JRadioButton("Accent beats:");
 			this.add(emphasizeBeatsRadioButton, new GridBagConstraints(0, 12, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			emphasizeBeatsRadioButton.setFont(defaultFont);
+			emphasizeBeatsRadioButton.setFont(ourPlainFont);
 			JPanel emphasizeBeatsPanel = new JPanel();
 			FlowLayout emphasizeBeatsPanelLayout = new FlowLayout();
 			emphasizeBeatsPanelLayout.setHgap(0);
@@ -319,8 +342,12 @@ class MetronomePanel extends JPanel {
 
 			onOffButton = new JToggleButton();
 			onOffButton.setText("start/stop");
-			onOffButton.setFont(defaultFont);
+			onOffButton.setFont(ourPlainFont);
 			this.add(onOffButton, new GridBagConstraints(0, 14, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+
+			link = new JLabel("<html><body><u>link to this metronome setting</u></body></html>");
+			link.setForeground(Color.BLUE);
+			this.add(link, new GridBagConstraints(0, 15, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
 		} catch(Exception e) {
 			e.printStackTrace();

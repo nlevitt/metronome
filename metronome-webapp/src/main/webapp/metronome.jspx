@@ -44,7 +44,7 @@
 				<td>
 					<applet code="org.pseudorandom.metronome.MetronomeApplet" 
 						archive="metronome-applet-1.0-SNAPSHOT.jar"
-						width="700" height="500">
+						width="700" height="450">
 
 						<param name="tempoBpm" value="${bpm}" />
 						<param name="beatsPerMeasure" value="${beats}" />
