@@ -1,5 +1,7 @@
 package org.pseudorandom.metronome;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiUnavailableException;
 import javax.swing.JApplet;
@@ -20,54 +22,72 @@ public class MetronomeApplet extends JApplet {
     @Override
 	public void destroy() {
 		super.destroy();
-		System.out.println("MetronomeApplet.destroy(): stopping metronome");
 		metronome.stopMetronome();
 	}
 
     @Override
 	public void stop() {
 		super.stop();
-		System.out.println("MetronomeApplet.stop(): stopping metronome");
 		metronome.stopMetronome();
-	}
+    }
 
-	public void init() {
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
-            	public void run() {
-            		try {
-            			if (getParameter("tempoBpm") != null) {
-            				metronome.setTempoBpm(Double.parseDouble(getParameter("tempoBpm")));
-            			}
-            			if (getParameter("beatsPerMeasure") != null) {
-            				metronome.setBeatsPerMeasure(Integer.parseInt(getParameter("beatsPerMeasure")));
-            			}
-            			if (getParameter("beatValue") != null) {
-            				metronome.setBeatValue(NoteValue.valueOf(getParameter("beatValue")));
-            			}
-            			if (getParameter("tockValue") != null) {
-            				metronome.setTockValue(NoteValue.valueOf(getParameter("tockValue")));
-            			}
-            			if (getParameter("emphasizeBeats") != null) {
-            				String[] strBeats = getParameter("emphasizeBeats").split("[0-9]+");
-            				Integer[] beats = new Integer[strBeats.length];
-            				for (int i = 0; i < strBeats.length; i++) {
-            					beats[i] = Integer.parseInt(strBeats[i]);
-            				}
-            				metronome.setEmphasizeBeats(beats);
-            			}
-            		} catch (Exception e) { 
-            			e.printStackTrace();
-            		}
+    public void init() {
+    	try {
+    		SwingUtilities.invokeAndWait(new Runnable() {
+    			public void run() {
+    				setParameters();
 
-            		MetronomePanel panel = new MetronomePanel(metronome);
-                    panel.setOpaque(true); 
-                    setContentPane(panel);
-                }
-            });
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
+    				MetronomePanel panel = new MetronomePanel(metronome);
+    				panel.setOpaque(true); 
+    				setContentPane(panel);
+    			}
+
+    			protected void setParameters() {
+    				if (getParameter("tempoBpm") != null) try {
+    					metronome.setTempoBpm(Double.parseDouble(getParameter("tempoBpm")));
+    				} catch (Exception e) {
+    					e.printStackTrace();
+    				}
+
+    				if (getParameter("beatsPerMeasure") != null) try {
+    					metronome.setBeatsPerMeasure(Integer.parseInt(getParameter("beatsPerMeasure")));
+    				} catch (Exception e) {
+    					e.printStackTrace();
+    				}
+
+    				if (getParameter("beatValue") != null) try {
+    					metronome.setBeatValue(NoteValue.valueOf(getParameter("beatValue")));
+    				} catch (Exception e) {
+    					e.printStackTrace();
+    				}
+
+    				if (getParameter("tockValue") != null) try {
+    					metronome.setTockValue(NoteValue.valueOf(getParameter("tockValue")));
+    				} catch (Exception e) {
+    					e.printStackTrace();
+    				}
+
+    				if (getParameter("emphasizeBeats") != null) {
+    					String[] strBeats = getParameter("emphasizeBeats").split("[^0-9]+");
+    					if (strBeats.length > 0) {
+    						Integer[] beats = new Integer[strBeats.length];
+    						for (int i = 0; i < strBeats.length; i++) {
+    							beats[i] = Integer.parseInt(strBeats[i]);
+    						}
+    						try {
+    							metronome.setEmphasizeBeats(beats);
+    						} catch (Exception e) {
+    							e.printStackTrace();
+    						}
+    					}
+    				}
+    			}
+    		});
+    	} catch (InterruptedException e) {
+    		e.printStackTrace();
+    	} catch (InvocationTargetException e) {
+    		e.printStackTrace();
+    	}
     }
     
 	public static void main(String[] args) throws MidiUnavailableException, InvalidMidiDataException, InterruptedException {
