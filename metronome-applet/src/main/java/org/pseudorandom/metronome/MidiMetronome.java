@@ -27,10 +27,10 @@ public class MidiMetronome {
 //	protected static final int TICK_MIDI_KEY = 80;
 //	protected static final int TOCK_MIDI_KEY = 80;
 
-	protected double tempoBpm = 96;
+	protected double tempoBpm = 88;
 	protected int beatsPerMeasure = 4;
 	protected NoteValue beatValue = NoteValue.QUARTER_NOTE;
-	protected NoteValue tockValue = NoteValue.EIGHTH_NOTE;
+	protected NoteValue tockValue = NoteValue.SIXTEENTH_NOTE;
 	protected Integer[] emphasizeBeats = null;
 	
 	protected Sequencer sequencer;

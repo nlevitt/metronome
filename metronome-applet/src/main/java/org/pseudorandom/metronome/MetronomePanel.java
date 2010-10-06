@@ -303,7 +303,7 @@ class MetronomePanel extends JPanel {
 			tockValueCombo.setModel(tockValueComboModel);
 			this.add(tockValueCombo, new GridBagConstraints(2, 10, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-			emphasizeBeatsRadioButton = new JRadioButton("Emphasize Beats:");
+			emphasizeBeatsRadioButton = new JRadioButton("Accent beats:");
 			this.add(emphasizeBeatsRadioButton, new GridBagConstraints(0, 12, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			emphasizeBeatsRadioButton.setFont(defaultFont);
 			JPanel emphasizeBeatsPanel = new JPanel();
@@ -318,7 +318,7 @@ class MetronomePanel extends JPanel {
 			}
 
 			onOffButton = new JToggleButton();
-			onOffButton.setText("metronome start/stop");
+			onOffButton.setText("start/stop");
 			onOffButton.setFont(defaultFont);
 			this.add(onOffButton, new GridBagConstraints(0, 14, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 

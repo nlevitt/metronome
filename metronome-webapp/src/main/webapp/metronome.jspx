@@ -14,6 +14,11 @@
 		<style>
 			html, body { font-family:sans-serif; background-color:#000; color:#fff }
 			a { color:#fff; } 
+			h1 { font-size:130%; }
+			h2 { font-size:116%; }
+			h3 { margin-top:0; font-size:106%; }
+			ul { margin-left:1em; padding-left:0; }
+			td { vertical-align:top; }
 		</style>
 	</head>
 
@@ -21,17 +26,21 @@
 
 		<table>
 			<tr>
-				<td style="width:20%">
-					Some presets:
+				<td style="min-width:12em">
+					<h3> Notes </h3>
 					<ul>
-						<li> <a href="?bpm=330&amp;amp;beats=5&amp;amp;beat=8&amp;amp;emp=1,3">Paidushko (3+2)</a> </li>
-						<li> <a href="?bpm=322&amp;amp;beats=7&amp;amp;beat=8&amp;amp;emp=1,4,6">Ekremov/Sunet Oro (3+2+2)</a> </li>
-						<li> <a href="?bpm=220&amp;amp;beats=8&amp;amp;beat=8&amp;amp;emp=1,4,7">Bulgar/Cocek (3+3+2)</a> </li>
-						<li> <a href="?bpm=472&amp;amp;beats=11&amp;amp;beat=8&amp;amp;emp=1,3,5,8,10">Kopanica (2+2+3+2+2)</a> </li>
-						<li> <a href="?bpm=440&amp;amp;beats=16&amp;amp;beat=8&amp;amp;emp=1,3,5,7,10,12,14">Leventikos (2+2+2+3+2+2+3)</a> </li>
-						<li> <a href="?bpm=320&amp;amp;beats=22&amp;amp;beat=8&amp;amp;emp=1,3,5,7,10,12,14,16,19,21">Sandansko (2+2+2+3+2+2+2+3+2+2)</a> </li>
+						<li> This hasn't been widely tested.
+							If it doesn't work for you, please email me. </li>
+						<li> The metronome click uses the midi percussion 
+							instrument Low Woodblock.
+							It sounds pretty good to me on my mac laptop. 
+							If it sounds crappy on your machine, I'd be 
+							interested to hear about it.
+						</li>
 					</ul>
+					
 				</td>
+
 				<td>
 					<applet code="org.pseudorandom.metronome.MetronomeApplet" 
 						archive="metronome-applet-1.0-SNAPSHOT.jar"
@@ -55,14 +64,23 @@
 						</p>
 					</applet>
 				</td>
-				<td style="width:20%">
-					your mom smells
+
+				<td style="min-width:12em">
+					<h3> Some presets </h3>
+					<ul>
+						<li> <a href="?bpm=330&amp;amp;beats=5&amp;amp;beat=8&amp;amp;emp=1,3">Paidushko (3+2)</a> </li>
+						<li> <a href="?bpm=322&amp;amp;beats=7&amp;amp;beat=8&amp;amp;emp=1,4,6">Ekremov/Sunet Oro (3+2+2)</a> </li>
+						<li> <a href="?bpm=340&amp;amp;beats=8&amp;amp;beat=8&amp;amp;emp=1,4,7">Bulgar/Cocek (3+3+2)</a> </li>
+						<li> <a href="?bpm=472&amp;amp;beats=11&amp;amp;beat=8&amp;amp;emp=1,3,5,8,10">Kopanica (2+2+3+2+2)</a> </li>
+						<li> <a href="?bpm=440&amp;amp;beats=16&amp;amp;beat=8&amp;amp;emp=1,3,5,7,10,12,14">Leventikos (2+2+2+3+2+2+3)</a> </li>
+						<li> <a href="?bpm=320&amp;amp;beats=22&amp;amp;beat=8&amp;amp;emp=1,3,5,7,10,12,14,16,19,21">Sandansko (2+2+2+3+2+2+2+3+2+2)</a> </li>
+					</ul>
 				</td>
 			</tr>
 		</table>
 
 		<div style="text-align:center">
-			<p> Praise, gratitude accepted at nlevitt@<span style="display:none">[nospamthanks]</span>gmail.com. </p>
+			<p> Praise, gratitude accepted at nlev<span style="display:none">[nospamthx]</span>itt@gmail.com. </p>
 			<!--
 			<p> Also feel free to send suggestions, bug reports and
 				patches. And I will feel free to ignore them. Just
