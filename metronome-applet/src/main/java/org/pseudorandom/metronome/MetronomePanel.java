@@ -128,12 +128,8 @@ class MetronomePanel extends JPanel {
 			});
 		}
 		
-		// link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		link.setCursor(Cursor.getPredefinedCursor(Cursor.CROSSHAIR_CURSOR));
+		link.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 		link.addMouseListener(new MouseAdapter() {
-//			public void mouseEntered(MouseEvent e) {
-//			}
-			
 			public void mouseClicked(MouseEvent e) {
 				MetronomePanel.this.applet.openLink();
 			}
@@ -161,6 +157,7 @@ class MetronomePanel extends JPanel {
 
 		for (int i = 1; i < emphasizeBeatsCheckboxes.length; i++) {
 			emphasizeBeatsCheckboxes[i].setEnabled(emphasizeBeatsRadioButton.isSelected() && i < metronome.getBeatsPerMeasure());
+			// System.out.println("should checkbox[" + i + "] be visible? is " + i + "<" + metronome.getBeatsPerMeasure() + " ? " + (i < metronome.getBeatsPerMeasure())); 
 			emphasizeBeatsCheckboxes[i].setVisible(i < metronome.getBeatsPerMeasure());
 			
 			if (metronome.getEmphasizeBeats() != null) {
@@ -347,6 +344,7 @@ class MetronomePanel extends JPanel {
 
 			link = new JLabel("<html><body><u>link to this metronome setting</u></body></html>");
 			link.setForeground(Color.BLUE);
+			link.setFont(ourPlainFont);
 			this.add(link, new GridBagConstraints(0, 15, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
 		} catch(Exception e) {

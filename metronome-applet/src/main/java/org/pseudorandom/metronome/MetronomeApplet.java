@@ -51,31 +51,31 @@ public class MetronomeApplet extends JApplet {
     }
 
     protected void setParameters() {
-    	if (getParameter("tempoBpm") != null) try {
+    	if (getParameter("tempoBpm") != null && !"".equals(getParameter("tempoBpm"))) try {
     		metronome.setTempoBpm(Double.parseDouble(getParameter("tempoBpm")));
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
 
-    	if (getParameter("beatsPerMeasure") != null) try {
+    	if (getParameter("beatsPerMeasure") != null && !"".equals(getParameter("beatsPerMeasure"))) try {
     		metronome.setBeatsPerMeasure(Integer.parseInt(getParameter("beatsPerMeasure")));
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
 
-    	if (getParameter("beatValue") != null) try {
+    	if (getParameter("beatValue") != null && !"".equals(getParameter("beatValue"))) try {
     		metronome.setBeatValue(NoteValue.valueOf(getParameter("beatValue")));
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
 
-    	if (getParameter("tockValue") != null) try {
+    	if (getParameter("tockValue") != null && !"".equals(getParameter("tockValue"))) try {
     		metronome.setTockValue(NoteValue.valueOf(getParameter("tockValue")));
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
 
-    	if (getParameter("emphasizeBeats") != null) {
+    	if (getParameter("emphasizeBeats") != null && !"".equals(getParameter("emphasizeBeats"))) {
     		String[] strBeats = getParameter("emphasizeBeats").split("[^0-9]+");
     		if (strBeats.length > 0) {
     			Integer[] beats = new Integer[strBeats.length];

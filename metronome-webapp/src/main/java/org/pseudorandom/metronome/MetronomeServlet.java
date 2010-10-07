@@ -1,6 +1,8 @@
 package org.pseudorandom.metronome;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -9,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 public class MetronomeServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-
 	
 	protected String noteName(int n) {
 		switch (n) {
@@ -26,8 +27,7 @@ public class MetronomeServlet extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
-		System.out.println("MetronomeServlet.doGet() params=" + request.getParameterMap());
+		logRequest(request);
 		
 		if (request.getParameter("bpm") != null) {
 			request.setAttribute("bpm", request.getParameter("bpm")); 
@@ -51,4 +51,12 @@ public class MetronomeServlet extends HttpServlet {
 		request.getRequestDispatcher("/metronome.jspx").forward(request, response);
 	}
 
+	protected static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+	protected void logRequest(HttpServletRequest request) {
+		StringBuffer buf = request.getRequestURL();
+		if (request.getQueryString() != null) {
+			buf.append('?').append(request.getQueryString());
+		}
+		System.out.println("[" + DATE_FORMAT.format(new Date()) + "] MetronomeServlet handling request from " + request.getRemoteAddr() + " for " + buf);
+	}
 }
