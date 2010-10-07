@@ -52,11 +52,19 @@ public class MetronomeServlet extends HttpServlet {
 	}
 
 	protected static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-	protected void logRequest(HttpServletRequest request) {
+	protected void logRequest(HttpServletRequest request) { 
 		StringBuffer buf = request.getRequestURL();
+		
+		Object originalRequestUri = request.getAttribute("javax.servlet.forward.request_uri");
+		int uriIndex = buf.lastIndexOf(request.getRequestURI());
+		if (originalRequestUri != null && uriIndex >= 0) {
+			buf.replace(uriIndex, buf.length(), originalRequestUri.toString());
+		}
+		
 		if (request.getQueryString() != null) {
 			buf.append('?').append(request.getQueryString());
 		}
+		
 		System.out.println("[" + DATE_FORMAT.format(new Date()) + "] MetronomeServlet handling request from " + request.getRemoteAddr() + " for " + buf);
 	}
 }
