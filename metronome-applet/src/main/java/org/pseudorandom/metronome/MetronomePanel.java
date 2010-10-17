@@ -34,7 +34,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 class MetronomePanel extends JPanel {
-	protected static final int MAX_BEATS_PER_MEASURE = 32;
+	protected static final int MAX_BEATS_PER_MEASURE = 25;
 
 	private static final long serialVersionUID = 1L;
 	
@@ -313,7 +313,7 @@ class MetronomePanel extends JPanel {
 
 			layout.rowWeights = new double[] {0.0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0};
 			layout.rowHeights = new int[] {15, 15, 15, 15, 25, 11, 25, 10, 5, 15, 13, 25, 13, 25, 14, 12, 7, 25};
-//			layout.columnWeights = new double[] {0.1, 0.0, 0.0, 0.0, 0.1};
+			layout.columnWeights = new double[] {0.1, 0.0, 0.0, 0.0, 0.1};
 //			layout.columnWidths = new int[] {7, 10, 53, 10, 7};
 
 			int gridx = 1;
@@ -348,6 +348,7 @@ class MetronomePanel extends JPanel {
 			clickLabel.setFont(ourPlainFont);
 			this.add(clickLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			clickButton = new JButton("click beat");
+			clickButton.setFont(ourPlainFont);
 			this.add(clickButton, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			
 			gridx += 2;
