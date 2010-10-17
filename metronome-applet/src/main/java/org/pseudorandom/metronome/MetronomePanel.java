@@ -13,11 +13,13 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Date;
 import java.util.LinkedList;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.ButtonGroup;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -51,8 +53,10 @@ class MetronomePanel extends JPanel {
 	private JRadioButton emphasizeBeatsRadioButton;
 	private JLabel link;
 	private JCheckBox[] emphasizeBeatsCheckboxes;
+	private JButton clickButton;
 
 	private MetronomeApplet applet;
+
 
 	protected MetronomePanel(MetronomeApplet applet, MidiMetronome nome) {
 		super();
@@ -134,6 +138,32 @@ class MetronomePanel extends JPanel {
 				MetronomePanel.this.applet.openLink();
 			}
 		});
+		
+		clickButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				handleFindTempoClick(e.getWhen());
+			}
+		});
+	}
+
+	private int clickCount = -1;
+	private long firstClick = -1l;
+	
+	protected void handleFindTempoClick(long when) {
+		if (clickCount < 0 || firstClick < 0) {
+			clickCount = 0;
+			firstClick = when;
+		} else {
+			clickCount++;
+			
+			double beats = clickCount * ((double) metronome.getBeatsPerMeasure() / metronome.getClicksPerMeasure());
+			double minutes = (when - firstClick) / 60000.0; 
+			double bpm = beats / minutes;
+			System.out.println(new Date() + " " + clickCount + " clicks in " + minutes + " minutes comes to " + bpm + " bpm");
+			// setTempoBpm(bpm);
+			tempoSpinner.setValue(bpm);
+		}
+		
 	}
 
 	protected void setEmphasizeBeatsFromCheckboxes() {
@@ -260,8 +290,8 @@ class MetronomePanel extends JPanel {
 			GridBagLayout layout = new GridBagLayout();
 			this.setLayout(layout);
 
-//			layout.rowWeights = new double[] {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0};
-			layout.rowHeights = new int[] {15, 15, 25, 11, 25, 10, 5, 15, 13, 25, 13, 25, 14, 12, 7, 25};
+			layout.rowWeights = new double[] {0.0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0};
+			layout.rowHeights = new int[] {15, 15, 15, 15, 25, 11, 25, 10, 5, 15, 13, 25, 13, 25, 14, 12, 7, 25};
 //			layout.columnWeights = new double[] {0.1, 0.0, 0.0, 0.0, 0.1};
 //			layout.columnWidths = new int[] {7, 10, 53, 10, 7};
 
@@ -283,22 +313,25 @@ class MetronomePanel extends JPanel {
 			JLabel tempoLabel = new JLabel("Tempo:");
 			tempoLabel.setFont(ourPlainFont);
 			this.add(tempoLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(tempoLabel);
 			SpinnerNumberModel tempoSpinnerModel = new SpinnerNumberModel(100, 1, 999, 1);
 			tempoSpinner = new JSpinner(tempoSpinnerModel);
 			tempoSpinner.setFont(ourPlainFont);
 			this.add(tempoSpinner, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(tempoSpinner);
 			JLabel tempoBpmLabel = new JLabel("BPM");
 			tempoBpmLabel.setFont(ourPlainFont);
 			this.add(tempoBpmLabel, new GridBagConstraints(4, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(tempoBpmLabel);
+			
+			gridx += 2;
+			JLabel clickLabel = new JLabel("Find tempo:");
+			clickLabel.setFont(ourPlainFont);
+			this.add(clickLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			 clickButton = new JButton("click beat");
+			this.add(clickButton, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			
 			gridx += 2;
 			JLabel timesigLabel = new JLabel("Time signature:");
 			timesigLabel.setFont(ourPlainFont);
 			this.add(timesigLabel, new GridBagConstraints(0, gridx, 3, 2, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(timesigLabel);
 			
 			timesigBottomLabel = new JLabel("" + metronome.getBeatValue().numericValue());
 			timesigBottomLabel.setFont(bigFont);
@@ -313,28 +346,23 @@ class MetronomePanel extends JPanel {
 			beatsPerMeasureLabel = new JLabel("Beats per measure:");
 			beatsPerMeasureLabel.setFont(ourPlainFont);
 			this.add(beatsPerMeasureLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(beatsPerMeasureLabel);
 			SpinnerNumberModel beatsPerMeasureSpinnerModel = new SpinnerNumberModel(metronome.getBeatsPerMeasure(), 1, MAX_BEATS_PER_MEASURE, 1);
 			beatsPerMeasureSpinner = new JSpinner(beatsPerMeasureSpinnerModel);
 			beatsPerMeasureSpinner.setFont(ourPlainFont);
 			this.add(beatsPerMeasureSpinner, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(beatsPerMeasureSpinner);
 			
 			gridx += 1;
 			JLabel beatValueLabel = new JLabel("Beat value:");
 			this.add(beatValueLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(beatValueLabel);
 			beatValueLabel.setFont(ourPlainFont);
 			beatValueComboModel = new DefaultComboBoxModel(NoteValue.values());
 			beatValueCombo = new JComboBox(beatValueComboModel);
 			beatValueCombo.setFont(ourPlainFont);
 			this.add(beatValueCombo, new GridBagConstraints(2, gridx, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(beatValueCombo);
 
 			gridx += 2;
 			tockValueRadioButton = new JRadioButton("Ghost beats:");
 			this.add(tockValueRadioButton, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(tockValueRadioButton);
 			tockValueRadioButton.setFont(ourPlainFont);
 			tockValueComboModel = new DefaultComboBoxModel();
 			updateTockValueChoices(metronome.getBeatValue());
@@ -342,19 +370,16 @@ class MetronomePanel extends JPanel {
 			tockValueCombo.setFont(ourPlainFont);
 			tockValueCombo.setModel(tockValueComboModel);
 			this.add(tockValueCombo, new GridBagConstraints(2, gridx, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(tockValueCombo);
 
 			gridx += 2;
 			emphasizeBeatsRadioButton = new JRadioButton("Accent beats:");
 			this.add(emphasizeBeatsRadioButton, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(emphasizeBeatsRadioButton);
 			emphasizeBeatsRadioButton.setFont(ourPlainFont);
 			JPanel emphasizeBeatsPanel = new JPanel();
 			FlowLayout emphasizeBeatsPanelLayout = new FlowLayout();
 			emphasizeBeatsPanelLayout.setHgap(0);
 			emphasizeBeatsPanel.setLayout(emphasizeBeatsPanelLayout);
 			this.add(emphasizeBeatsPanel, new GridBagConstraints(0, gridx+1, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(emphasizeBeatsPanel);
 			emphasizeBeatsCheckboxes = new JCheckBox[MAX_BEATS_PER_MEASURE];
 			for (int i = 0; i < emphasizeBeatsCheckboxes.length; i++) {
 				emphasizeBeatsCheckboxes[i] = new JCheckBox();
@@ -366,14 +391,12 @@ class MetronomePanel extends JPanel {
 			onOffButton.setText("start/stop");
 			onOffButton.setFont(ourPlainFont);
 			this.add(onOffButton, new GridBagConstraints(0, gridx, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(onOffButton);
 
 			gridx++;
 			link = new JLabel("<html><body><u>link to this metronome setting</u></body></html>");
 			link.setForeground(Color.BLUE);
 			link.setFont(ourPlainFont);
 			this.add(link, new GridBagConstraints(0, gridx, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-//			this.add(link);
 
 		} catch(Exception e) {
 			e.printStackTrace();

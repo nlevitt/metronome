@@ -216,5 +216,19 @@ public class MidiMetronome {
 	public Integer[] getEmphasizeBeats() {
 		return emphasizeBeats;
 	}
+
+	public int getClicksPerMeasure() {
+		if (emphasizeBeats != null) {
+			int count = 1;
+			for (int n: emphasizeBeats) {
+				if (n > 1 && n <= beatsPerMeasure) {
+					count++;
+				}
+			}
+			return count;
+		} else {
+			return beatsPerMeasure;
+		}
+	}
 	
 }
