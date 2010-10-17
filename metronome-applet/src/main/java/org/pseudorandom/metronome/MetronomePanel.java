@@ -13,8 +13,9 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Date;
 import java.util.LinkedList;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.ButtonGroup;
@@ -28,6 +29,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.JSpinner.NumberEditor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -54,9 +56,9 @@ class MetronomePanel extends JPanel {
 	private JLabel link;
 	private JCheckBox[] emphasizeBeatsCheckboxes;
 	private JButton clickButton;
+	private NumberEditor tempoSpinnerEditor;
 
 	private MetronomeApplet applet;
-
 
 	protected MetronomePanel(MetronomeApplet applet, MidiMetronome nome) {
 		super();
@@ -148,22 +150,41 @@ class MetronomePanel extends JPanel {
 
 	private int clickCount = -1;
 	private long firstClick = -1l;
-	
+	private Timer finishClick;
+
 	protected void handleFindTempoClick(long when) {
 		if (clickCount < 0 || firstClick < 0) {
 			clickCount = 0;
 			firstClick = when;
 		} else {
 			clickCount++;
-			
-			double beats = clickCount * ((double) metronome.getBeatsPerMeasure() / metronome.getClicksPerMeasure());
-			double minutes = (when - firstClick) / 60000.0; 
-			double bpm = beats / minutes;
-			System.out.println(new Date() + " " + clickCount + " clicks in " + minutes + " minutes comes to " + bpm + " bpm");
-			// setTempoBpm(bpm);
-			tempoSpinner.setValue(bpm);
+			tempoSpinner.setValue(calcTempoBpm(when));
+	        tempoSpinnerEditor.getTextField().setForeground(Color.WHITE);
+	        tempoSpinnerEditor.getTextField().setBackground(Color.BLUE);
 		}
 		
+		// set a timer to stop waiting for clicks
+		if (finishClick != null) {
+			finishClick.cancel();
+		}
+		finishClick = new Timer();
+		finishClick.schedule(new TimerTask() {
+			public void run() {
+				clickCount = -1;
+				firstClick = -1;
+		        tempoSpinnerEditor.getTextField().setForeground(Color.BLACK);
+		        tempoSpinnerEditor.getTextField().setBackground(Color.WHITE);
+			}
+		},
+		1600);
+	}
+	
+	protected double calcTempoBpm(long lastClick) {
+		double beats = clickCount * ((double) metronome.getBeatsPerMeasure() / metronome.getClicksPerMeasure());
+		double minutes = (lastClick - firstClick) / 60000.0; 
+		double bpm = beats / minutes;
+		// System.out.println(new Date() + " " + clickCount + " clicks in " + minutes + " minutes comes to " + bpm + " bpm");
+		return bpm;
 	}
 
 	protected void setEmphasizeBeatsFromCheckboxes() {
@@ -306,7 +327,6 @@ class MetronomePanel extends JPanel {
 
 			title.setFont(bigFont);
 			this.add(title, new GridBagConstraints(0, gridx, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			// this.add(title);
 			new GridBagConstraints();
 
 			gridx += 2;
@@ -316,6 +336,8 @@ class MetronomePanel extends JPanel {
 			SpinnerNumberModel tempoSpinnerModel = new SpinnerNumberModel(100, 1, 999, 1);
 			tempoSpinner = new JSpinner(tempoSpinnerModel);
 			tempoSpinner.setFont(ourPlainFont);
+			tempoSpinnerEditor = new JSpinner.NumberEditor(tempoSpinner, "0.0");
+			tempoSpinner.setEditor(tempoSpinnerEditor);
 			this.add(tempoSpinner, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			JLabel tempoBpmLabel = new JLabel("BPM");
 			tempoBpmLabel.setFont(ourPlainFont);
@@ -325,7 +347,7 @@ class MetronomePanel extends JPanel {
 			JLabel clickLabel = new JLabel("Find tempo:");
 			clickLabel.setFont(ourPlainFont);
 			this.add(clickLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			 clickButton = new JButton("click beat");
+			clickButton = new JButton("click beat");
 			this.add(clickButton, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			
 			gridx += 2;

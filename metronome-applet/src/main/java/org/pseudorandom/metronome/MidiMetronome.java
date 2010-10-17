@@ -154,8 +154,6 @@ public class MidiMetronome {
 		this.tempoBpm = bpm;
 		maybeRestart();
 
-		// sequencer.setTempoInBPM((float) bpm);
-		
 		if (sequencer.isRunning()) {
 			System.out.println(getTimesigString() + " at " + bpm + "bpm with tockValue=" + tockValue + " emphasizeBeats=" + Arrays.toString(emphasizeBeats));
 		}
