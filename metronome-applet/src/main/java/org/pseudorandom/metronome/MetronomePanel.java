@@ -55,8 +55,9 @@ class MetronomePanel extends JPanel {
 	private JRadioButton emphasizeBeatsRadioButton;
 	private JLabel link;
 	private JCheckBox[] emphasizeBeatsCheckboxes;
-	private JButton clickButton;
+	private JButton tapButton;
 	private NumberEditor tempoSpinnerEditor;
+	private JRadioButton[] beatsRadios;
 
 	private MetronomeApplet applet;
 
@@ -141,37 +142,37 @@ class MetronomePanel extends JPanel {
 			}
 		});
 		
-		clickButton.addActionListener(new ActionListener() {
+		tapButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				handleFindTempoClick(e.getWhen());
 			}
 		});
 	}
 
-	private int clickCount = -1;
-	private long firstClick = -1l;
-	private Timer finishClick;
+	private int tapCount = -1;
+	private long firstTap = -1l;
+	private Timer tapFinishTimer;
 
 	protected void handleFindTempoClick(long when) {
-		if (clickCount < 0 || firstClick < 0) {
-			clickCount = 0;
-			firstClick = when;
+		if (tapCount < 0 || firstTap < 0) {
+			tapCount = 0;
+			firstTap = when;
 		} else {
-			clickCount++;
+			tapCount++;
 			tempoSpinner.setValue(calcTempoBpm(when));
 	        tempoSpinnerEditor.getTextField().setForeground(Color.WHITE);
 	        tempoSpinnerEditor.getTextField().setBackground(Color.BLUE);
 		}
 		
 		// set a timer to stop waiting for clicks
-		if (finishClick != null) {
-			finishClick.cancel();
+		if (tapFinishTimer != null) {
+			tapFinishTimer.cancel();
 		}
-		finishClick = new Timer();
-		finishClick.schedule(new TimerTask() {
+		tapFinishTimer = new Timer();
+		tapFinishTimer.schedule(new TimerTask() {
 			public void run() {
-				clickCount = -1;
-				firstClick = -1;
+				tapCount = -1;
+				firstTap = -1;
 		        tempoSpinnerEditor.getTextField().setForeground(Color.BLACK);
 		        tempoSpinnerEditor.getTextField().setBackground(Color.WHITE);
 			}
@@ -179,9 +180,9 @@ class MetronomePanel extends JPanel {
 		1600);
 	}
 	
-	protected double calcTempoBpm(long lastClick) {
-		double beats = clickCount * ((double) metronome.getBeatsPerMeasure() / metronome.getClicksPerMeasure());
-		double minutes = (lastClick - firstClick) / 60000.0; 
+	protected double calcTempoBpm(long lastTap) {
+		double beats = tapCount * ((double) metronome.getBeatsPerMeasure() / metronome.getClicksPerMeasure());
+		double minutes = (lastTap - firstTap) / 60000.0; 
 		double bpm = beats / minutes;
 		// System.out.println(new Date() + " " + clickCount + " clicks in " + minutes + " minutes comes to " + bpm + " bpm");
 		return bpm;
@@ -210,6 +211,7 @@ class MetronomePanel extends JPanel {
 			emphasizeBeatsCheckboxes[i].setEnabled(emphasizeBeatsRadioButton.isSelected() && i < metronome.getBeatsPerMeasure());
 			// System.out.println("should checkbox[" + i + "] be visible? is " + i + "<" + metronome.getBeatsPerMeasure() + " ? " + (i < metronome.getBeatsPerMeasure())); 
 			emphasizeBeatsCheckboxes[i].setVisible(i < metronome.getBeatsPerMeasure());
+			beatsRadios[i].setVisible(i < metronome.getBeatsPerMeasure());
 			
 			if (metronome.getEmphasizeBeats() != null) {
 				emphasizeBeatsCheckboxes[i].setSelected(MidiMetronome.contains(metronome.getEmphasizeBeats(), i+1));
@@ -311,10 +313,10 @@ class MetronomePanel extends JPanel {
 			GridBagLayout layout = new GridBagLayout();
 			this.setLayout(layout);
 
-			layout.rowWeights = new double[] {0.0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.1, 0.0};
+			layout.rowWeights = new double[] {0.0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0.1, 0.0};
 			layout.rowHeights = new int[] {15, 15, 15, 15, 25, 11, 25, 10, 5, 15, 13, 25, 13, 25, 14, 12, 7, 25};
 			layout.columnWeights = new double[] {0.1, 0.0, 0.0, 0.0, 0.1};
-//			layout.columnWidths = new int[] {7, 10, 53, 10, 7};
+			layout.columnWidths = new int[] {7, 10, 53, 10, 7};
 
 			int gridx = 1;
 			
@@ -344,12 +346,12 @@ class MetronomePanel extends JPanel {
 			this.add(tempoBpmLabel, new GridBagConstraints(4, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			
 			gridx += 2;
-			JLabel clickLabel = new JLabel("Find tempo:");
-			clickLabel.setFont(ourPlainFont);
-			this.add(clickLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			clickButton = new JButton("click beat");
-			clickButton.setFont(ourPlainFont);
-			this.add(clickButton, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
+			JLabel tapLabel = new JLabel("Find tempo:");
+			tapLabel.setFont(ourPlainFont);
+			this.add(tapLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			tapButton = new JButton("tap beat");
+			tapButton.setFont(ourPlainFont);
+			this.add(tapButton, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			
 			gridx += 2;
 			JLabel timesigLabel = new JLabel("Time signature:");
@@ -409,7 +411,21 @@ class MetronomePanel extends JPanel {
 				emphasizeBeatsPanel.add(emphasizeBeatsCheckboxes[i]);
 			}
 
-			gridx += 2;
+			JPanel panel = new JPanel();
+			FlowLayout flow = new FlowLayout();
+			flow.setHgap(0);
+			panel.setLayout(flow);
+			this.add(panel, new GridBagConstraints(0, gridx+2, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+			ButtonGroup g = new ButtonGroup();
+			beatsRadios = new JRadioButton[MAX_BEATS_PER_MEASURE];
+			for (int i = 0; i < beatsRadios.length; i++) {
+				beatsRadios[i] = new JRadioButton();
+				panel.add(beatsRadios[i]);
+				g.add(beatsRadios[i]);
+				beatsRadios[i].setEnabled(false);
+			}
+
+			gridx += 3;
 			onOffButton = new JToggleButton();
 			onOffButton.setText("start/stop");
 			onOffButton.setFont(ourPlainFont);

@@ -6,8 +6,10 @@ import java.util.TimerTask;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiMessage;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Receiver;
 import javax.sound.midi.Sequence;
 import javax.sound.midi.Sequencer;
 import javax.sound.midi.ShortMessage;
@@ -47,8 +49,36 @@ public class MidiMetronome {
 
 			sequencer.getTransmitter().setReceiver(synth.getReceiver());
 
+			// woo! artificial midi device so we can do stuff on tick 
+			sequencer.getTransmitter().setReceiver(new Receiver() {
+				public void send(MidiMessage message, long timeStamp) {
+					if (message instanceof MetronomeTick) {
+						MetronomeTick tick = (MetronomeTick) message;
+						System.err.println(getClass().getSimpleName() + ".send() System.nanoTime()=" + System.nanoTime() + " message=" + tick);
+					}
+				}
+				public void close() {
+				}
+			});
+
 			sequencer.setLoopCount(Sequencer.LOOP_CONTINUOUSLY);
 			sequencer.setTempoInBPM((float) tempoBpm);
+			
+//			sequencer.addMetaEventListener(new MetaEventListener() {
+//				public void meta(MetaMessage meta) {
+//					System.err.println("meta() meta=" + meta);
+//				}
+//			});
+//			int[] rollers = new int[128]; 
+//			for (int i = 0; i < rollers.length; i++) {
+//				rollers[i] = i;
+//			}
+//			int[] controllers = sequencer.addControllerEventListener(new ControllerEventListener() {
+//				public void controlChange(ShortMessage e) {
+//					System.err.println("controlChange() e=" + e);
+//				}
+//			}, rollers);
+//			System.err.println("added controller event listener to controllers: " + Arrays.toString(controllers));
 		} catch (MidiUnavailableException e) {
 			throw new RuntimeException(e);
 		}
@@ -80,17 +110,20 @@ public class MidiMetronome {
 		Track track = sequence.createTrack();
 		
 		// first beat of measure
-		track.add(makePercussionEvent(ShortMessage.NOTE_ON, TICK_MIDI_KEY, ON_THE_ONE_VELOCITY, 0));
+		track.add(new MidiEvent(new MetronomeTick(1, TICK_MIDI_KEY, ON_THE_ONE_VELOCITY), 0));
 		
 		for (int tock = 2; tock <= tocksPerTick * beatsPerMeasure; tock++) {
 			if ((tock-1) % tocksPerTick == 0) {
-				track.add(makePercussionEvent(ShortMessage.NOTE_ON, TICK_MIDI_KEY, TICK_VELOCITY, tock - 1));
+				track.add(new MidiEvent(new MetronomeTick(tock, TICK_MIDI_KEY, TICK_VELOCITY), tock - 1));
 			} else {
-				track.add(makePercussionEvent(ShortMessage.NOTE_ON, TOCK_MIDI_KEY, TOCK_VELOCITY, tock - 1));
+				track.add(new MidiEvent(new MetronomeTick(tock, TOCK_MIDI_KEY, TOCK_VELOCITY), tock - 1));
 			}
 		}
 
-		track.add(makePercussionEvent(ShortMessage.NOTE_OFF, 0, 0, beatsPerMeasure * tocksPerTick));
+		ShortMessage loopEnd = new ShortMessage();
+		loopEnd.setMessage(ShortMessage.NOTE_OFF, MIDI_PERCUSSION_CHANNEL, 0, 0);
+		track.add(new MidiEvent(loopEnd, beatsPerMeasure * tocksPerTick));
+
 		
 		return sequence;
 	}
@@ -101,16 +134,19 @@ public class MidiMetronome {
 		Track track = sequence.createTrack();
 
 		// first beat of measure
-		track.add(makePercussionEvent(ShortMessage.NOTE_ON, TICK_MIDI_KEY, ON_THE_ONE_VELOCITY, 0));
+		track.add(new MidiEvent(new MetronomeTick(1, TICK_MIDI_KEY, ON_THE_ONE_VELOCITY), 0));
 		for (int beat = 2; beat <= beatsPerMeasure; beat++) {
 			if (contains(emphasizeBeats, beat)) {
-				track.add(makePercussionEvent(ShortMessage.NOTE_ON, TICK_MIDI_KEY, TICK_VELOCITY, beat - 1));
+				track.add(new MidiEvent(new MetronomeTick(beat, TICK_MIDI_KEY, TICK_VELOCITY), beat - 1));
 			} else {
-				track.add(makePercussionEvent(ShortMessage.NOTE_ON, TOCK_MIDI_KEY, TOCK_VELOCITY, beat - 1));
+				track.add(new MidiEvent(new MetronomeTick(beat, TOCK_MIDI_KEY, TOCK_VELOCITY), beat - 1));
 			}
 		}
 		
-		track.add(makePercussionEvent(ShortMessage.NOTE_OFF, 0, 0, beatsPerMeasure));
+		ShortMessage loopEnd = new ShortMessage();
+		loopEnd.setMessage(ShortMessage.NOTE_OFF, MIDI_PERCUSSION_CHANNEL, 0, 0);
+		track.add(new MidiEvent(loopEnd, beatsPerMeasure));
+
 		return sequence;
 	}
 	
@@ -142,12 +178,19 @@ public class MidiMetronome {
 			sequencer.stop();
 		}
 	}
+	
+	protected static class MetronomeTick extends ShortMessage {
+		protected long tick;
 
-	protected MidiEvent makePercussionEvent(int command, int key, int velocity, long tick) throws InvalidMidiDataException {
-		ShortMessage message = new ShortMessage();
-		message.setMessage(command, MIDI_PERCUSSION_CHANNEL, key, velocity);
-		MidiEvent event = new MidiEvent(message, tick);
-		return event;
+		MetronomeTick(long tick, int midiKey, int midiVelocity) throws InvalidMidiDataException {
+			super();
+			setMessage(ShortMessage.NOTE_ON, MIDI_PERCUSSION_CHANNEL, midiKey, midiVelocity);
+			this.tick = tick; 
+		}
+		
+		public String toString() {
+			return "MetronomeTick(tick=" + tick + ",message=" + Arrays.toString(getMessage()) + ")";
+		}
 	}
 
 	public void setTempoBpm(double bpm) throws InvalidMidiDataException {
