@@ -39,7 +39,16 @@ public class MidiMetronome {
 	protected Synthesizer synth;
 
 	protected Timer restartTimer; // to delay restart
+	protected TickListener tickListener = null;
 
+	interface TickListener {
+		void tock(long tick); 
+	}
+	
+	public void setTickListener(TickListener l) {
+		this.tickListener = l;
+	}
+	
 	public MidiMetronome() {
 		try {
 			sequencer = MidiSystem.getSequencer();
@@ -54,7 +63,10 @@ public class MidiMetronome {
 				public void send(MidiMessage message, long timeStamp) {
 					if (message instanceof MetronomeTick) {
 						MetronomeTick tick = (MetronomeTick) message;
-						System.err.println(getClass().getSimpleName() + ".send() System.nanoTime()=" + System.nanoTime() + " message=" + tick);
+						if (tickListener != null) {
+							tickListener.tock(tick.tick);
+						}
+						// System.err.println(getClass().getName() + ".send() System.currentTimeMillis()=" + System.currentTimeMillis() + " message=" + tick);
 					}
 				}
 				public void close() {
@@ -63,22 +75,6 @@ public class MidiMetronome {
 
 			sequencer.setLoopCount(Sequencer.LOOP_CONTINUOUSLY);
 			sequencer.setTempoInBPM((float) tempoBpm);
-			
-//			sequencer.addMetaEventListener(new MetaEventListener() {
-//				public void meta(MetaMessage meta) {
-//					System.err.println("meta() meta=" + meta);
-//				}
-//			});
-//			int[] rollers = new int[128]; 
-//			for (int i = 0; i < rollers.length; i++) {
-//				rollers[i] = i;
-//			}
-//			int[] controllers = sequencer.addControllerEventListener(new ControllerEventListener() {
-//				public void controlChange(ShortMessage e) {
-//					System.err.println("controlChange() e=" + e);
-//				}
-//			}, rollers);
-//			System.err.println("added controller event listener to controllers: " + Arrays.toString(controllers));
 		} catch (MidiUnavailableException e) {
 			throw new RuntimeException(e);
 		}
@@ -102,9 +98,13 @@ public class MidiMetronome {
 		}
 	}
 
+	public int getTocksPerBeat() {
+		return (int) beatValue.divide(tockValue);
+	}
+	
 	protected Sequence makeNormalSequance() throws InvalidMidiDataException {
 		Sequence sequence;
-		int tocksPerTick = (int) beatValue.divide(tockValue);
+		int tocksPerBeat = getTocksPerBeat();
 		
 		sequence  = new Sequence(Sequence.PPQ, (int) beatValue.divide(tockValue));
 		Track track = sequence.createTrack();
@@ -112,8 +112,8 @@ public class MidiMetronome {
 		// first beat of measure
 		track.add(new MidiEvent(new MetronomeTick(1, TICK_MIDI_KEY, ON_THE_ONE_VELOCITY), 0));
 		
-		for (int tock = 2; tock <= tocksPerTick * beatsPerMeasure; tock++) {
-			if ((tock-1) % tocksPerTick == 0) {
+		for (int tock = 2; tock <= tocksPerBeat * beatsPerMeasure; tock++) {
+			if ((tock-1) % tocksPerBeat == 0) {
 				track.add(new MidiEvent(new MetronomeTick(tock, TICK_MIDI_KEY, TICK_VELOCITY), tock - 1));
 			} else {
 				track.add(new MidiEvent(new MetronomeTick(tock, TOCK_MIDI_KEY, TOCK_VELOCITY), tock - 1));
@@ -122,7 +122,7 @@ public class MidiMetronome {
 
 		ShortMessage loopEnd = new ShortMessage();
 		loopEnd.setMessage(ShortMessage.NOTE_OFF, MIDI_PERCUSSION_CHANNEL, 0, 0);
-		track.add(new MidiEvent(loopEnd, beatsPerMeasure * tocksPerTick));
+		track.add(new MidiEvent(loopEnd, beatsPerMeasure * tocksPerBeat));
 
 		
 		return sequence;
@@ -258,7 +258,9 @@ public class MidiMetronome {
 		return emphasizeBeats;
 	}
 
-	public int getClicksPerMeasure() {
+	// if using ghost beats, the number of beats per measure;  
+	// else if using accent beats, the number of accent beats, including the first beat 
+	public int getTapsPerMeasure() {
 		if (emphasizeBeats != null) {
 			int count = 1;
 			for (int n: emphasizeBeats) {

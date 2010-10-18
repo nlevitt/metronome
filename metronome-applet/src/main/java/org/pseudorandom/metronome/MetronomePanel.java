@@ -29,11 +29,14 @@ import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
 import javax.swing.JToggleButton;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.JSpinner.NumberEditor;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-class MetronomePanel extends JPanel {
+import org.pseudorandom.metronome.MidiMetronome.TickListener;
+
+class MetronomePanel extends JPanel implements TickListener {
 	protected static final int MAX_BEATS_PER_MEASURE = 25;
 
 	private static final long serialVersionUID = 1L;
@@ -66,6 +69,8 @@ class MetronomePanel extends JPanel {
 
 		this.applet = applet;
 		this.metronome = nome;
+		
+		nome.setTickListener(this);
 		
 		initGUI();
 
@@ -154,6 +159,7 @@ class MetronomePanel extends JPanel {
 	private Timer tapFinishTimer;
 
 	protected void handleFindTempoClick(long when) {
+		System.err.println("SwingUtilities.isEventDispatchThread()=" + SwingUtilities.isEventDispatchThread());
 		if (tapCount < 0 || firstTap < 0) {
 			tapCount = 0;
 			firstTap = when;
@@ -181,7 +187,7 @@ class MetronomePanel extends JPanel {
 	}
 	
 	protected double calcTempoBpm(long lastTap) {
-		double beats = tapCount * ((double) metronome.getBeatsPerMeasure() / metronome.getClicksPerMeasure());
+		double beats = tapCount * ((double) metronome.getBeatsPerMeasure() / metronome.getTapsPerMeasure());
 		double minutes = (lastTap - firstTap) / 60000.0; 
 		double bpm = beats / minutes;
 		// System.out.println(new Date() + " " + clickCount + " clicks in " + minutes + " minutes comes to " + bpm + " bpm");
@@ -420,9 +426,9 @@ class MetronomePanel extends JPanel {
 			beatsRadios = new JRadioButton[MAX_BEATS_PER_MEASURE];
 			for (int i = 0; i < beatsRadios.length; i++) {
 				beatsRadios[i] = new JRadioButton();
-				panel.add(beatsRadios[i]);
 				g.add(beatsRadios[i]);
-				beatsRadios[i].setEnabled(false);
+				panel.add(beatsRadios[i]);
+				// beatsRadios[i].setEnabled(false);
 			}
 
 			gridx += 3;
@@ -439,6 +445,28 @@ class MetronomePanel extends JPanel {
 
 		} catch(Exception e) {
 			e.printStackTrace();
+		}
+	}
+
+	// called by MidiMetronome on tick
+	public void tock(final long tock) {
+		// 	System.err.println(getClass().getName() + ".tick() SwingUtilities.isEventDispatchThread()=" + SwingUtilities.isEventDispatchThread());
+		
+		final int tocksPerBeat = metronome.getTocksPerBeat();
+		if (metronome.getEmphasizeBeats() != null) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// System.err.println(getClass().getName() + ".run() SwingUtilities.isEventDispatchThread()=" + SwingUtilities.isEventDispatchThread() + " beatsRadios[" + (int) (tock-1) + "]=" + beatsRadios[(int) (tock-1)]);
+					beatsRadios[(int) (tock-1)].setSelected(true);
+				}
+			});
+		} else if ((tock-1) % tocksPerBeat == 0) {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					// System.err.println(getClass().getName() + ".run() SwingUtilities.isEventDispatchThread()=" + SwingUtilities.isEventDispatchThread() + " beatsRadios[" + (int) (tock-1) / tocksPerBeat + "]=" + beatsRadios[(int) (tock-1)]);
+					beatsRadios[(int) (tock-1) / tocksPerBeat].setSelected(true);
+				}
+			});
 		}
 	}
 }
