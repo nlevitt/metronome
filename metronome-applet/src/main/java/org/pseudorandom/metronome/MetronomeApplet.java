@@ -83,7 +83,7 @@ public class MetronomeApplet extends JApplet {
     				beats[i] = Integer.parseInt(strBeats[i]);
     			}
     			try {
-    				metronome.setEmphasizeBeats(beats);
+    				metronome.setAccentBeats(beats);
     			} catch (Exception e) {
     				e.printStackTrace();
     			}
@@ -112,8 +112,8 @@ public class MetronomeApplet extends JApplet {
 		queryBuf.append("&beats=" + metronome.getBeatsPerMeasure());
 		queryBuf.append("&beat=" + metronome.getBeatValue().numericValue());
 		queryBuf.append("&tock=" + metronome.getTockValue().numericValue());
-		if (metronome.getEmphasizeBeats() != null) {
-			queryBuf.append("&emp=" + join(metronome.getEmphasizeBeats(), ","));
+		if (metronome.getAccentBeats() != null) {
+			queryBuf.append("&emp=" + join(metronome.getAccentBeats(), ","));
 		}
 		
 		try {

@@ -13,6 +13,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -44,7 +45,7 @@ class MetronomePanel extends JPanel implements TickListener {
 	protected MidiMetronome nome;
 	protected MidiMetronome metronome;
 	
-	private JToggleButton onOffButton;
+	private JToggleButton startStopButton;
 	private JSpinner tempoSpinner;
 	private JLabel timesigTopLabel;
 	private JLabel timesigBottomLabel;
@@ -55,9 +56,9 @@ class MetronomePanel extends JPanel implements TickListener {
 	private JLabel beatsPerMeasureLabel;
 	private DefaultComboBoxModel beatValueComboModel;
 	private DefaultComboBoxModel tockValueComboModel;
-	private JRadioButton emphasizeBeatsRadioButton;
+	private JRadioButton accentBeatsRadioButton;
 	private JLabel link;
-	private JCheckBox[] emphasizeBeatsCheckboxes;
+	private JCheckBox[] accentBeatsCheckboxes;
 	private JButton tapButton;
 	private NumberEditor tempoSpinnerEditor;
 	private JRadioButton[] beatsRadios;
@@ -74,7 +75,7 @@ class MetronomePanel extends JPanel implements TickListener {
 		
 		initGUI();
 
-		onOffButton.addActionListener(new ActionListener() {
+		startStopButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				toggleMetronome(((JToggleButton) event.getSource()).isSelected());
 			}
@@ -112,16 +113,16 @@ class MetronomePanel extends JPanel implements TickListener {
 		
 		ButtonGroup g = new ButtonGroup();
 		g.add(tockValueRadioButton);
-		g.add(emphasizeBeatsRadioButton);
-		if (metronome.getEmphasizeBeats() != null) {
-			emphasizeBeatsRadioButton.setSelected(true);
+		g.add(accentBeatsRadioButton);
+		if (metronome.getAccentBeats() != null) {
+			accentBeatsRadioButton.setSelected(true);
 		} else {
 			tockValueRadioButton.setSelected(true);
 		}
 		
-		emphasizeBeatsRadioButton.addActionListener(new ActionListener() {
+		accentBeatsRadioButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				enableEmphasizeBeats();
+				enableAccentBeats();
 			}
 		});
 		
@@ -132,10 +133,10 @@ class MetronomePanel extends JPanel implements TickListener {
 		});
 		
 		updateEmphasizeBeatsCheckBoxes();
-		for (int i = 0; i < emphasizeBeatsCheckboxes.length; i++) {
-			emphasizeBeatsCheckboxes[i].addItemListener(new ItemListener() {
+		for (int i = 0; i < accentBeatsCheckboxes.length; i++) {
+			accentBeatsCheckboxes[i].addItemListener(new ItemListener() {
 				public void itemStateChanged(ItemEvent e) {
-					setEmphasizeBeatsFromCheckboxes();
+					setAccentBeatsFromCheckboxes();
 				}
 			});
 		}
@@ -149,7 +150,7 @@ class MetronomePanel extends JPanel implements TickListener {
 		
 		tapButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				handleFindTempoClick(e.getWhen());
+				handleTap(e.getWhen());
 			}
 		});
 	}
@@ -158,8 +159,12 @@ class MetronomePanel extends JPanel implements TickListener {
 	private long firstTap = -1l;
 	private Timer tapFinishTimer;
 
-	protected void handleFindTempoClick(long when) {
-		System.err.println("SwingUtilities.isEventDispatchThread()=" + SwingUtilities.isEventDispatchThread());
+	protected void handleTap(final long when) {
+		// startStopButton.setSelected(false);
+		if (metronome.isRunning()) {
+			startStopButton.doClick();
+		}
+			
 		if (tapCount < 0 || firstTap < 0) {
 			tapCount = 0;
 			firstTap = when;
@@ -169,6 +174,8 @@ class MetronomePanel extends JPanel implements TickListener {
 	        tempoSpinnerEditor.getTextField().setForeground(Color.WHITE);
 	        tempoSpinnerEditor.getTextField().setBackground(Color.BLUE);
 		}
+		beatsRadios[whichBeat(when) - 1].setSelected(true);
+		System.err.println("tap - beat " + whichBeat(when) + " of the measure");
 		
 		// set a timer to stop waiting for clicks
 		if (tapFinishTimer != null) {
@@ -179,48 +186,72 @@ class MetronomePanel extends JPanel implements TickListener {
 			public void run() {
 				tapCount = -1;
 				firstTap = -1;
-		        tempoSpinnerEditor.getTextField().setForeground(Color.BLACK);
-		        tempoSpinnerEditor.getTextField().setBackground(Color.WHITE);
+				SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+						tempoSpinnerEditor.getTextField().setForeground(Color.BLACK);
+						tempoSpinnerEditor.getTextField().setBackground(Color.WHITE);
+					}
+				});
 			}
 		},
-		1600);
+		1600);  // XXX this should be computed
 	}
 	
+	protected int whichBeat(long when) {
+		if (tapCount < 0) {
+			return -1;
+		} else if (metronome.getAccentBeats() != null) {
+			// XXX this assumes that metronome.getAccentBeats() contains beat "1" which is not guaranteed
+			return metronome.getAccentBeats()[tapCount % metronome.getTapsPerMeasure()];
+		} else {
+			return 1 + tapCount % metronome.getBeatsPerMeasure();
+		}
+	}
+
 	protected double calcTempoBpm(long lastTap) {
-		double beats = tapCount * ((double) metronome.getBeatsPerMeasure() / metronome.getTapsPerMeasure());
+		long beats;
+		if (metronome.getAccentBeats() != null) {
+			// beats = tapCount * ((double) metronome.getBeatsPerMeasure() / metronome.getTapsPerMeasure());
+			int fullMeasures = tapCount / metronome.getTapsPerMeasure();
+			int beatOfMeasure = whichBeat(lastTap);
+			beats = fullMeasures * metronome.getBeatsPerMeasure() + beatOfMeasure - 1;
+		} else {
+			beats = tapCount;
+		}
 		double minutes = (lastTap - firstTap) / 60000.0; 
 		double bpm = beats / minutes;
 		// System.out.println(new Date() + " " + clickCount + " clicks in " + minutes + " minutes comes to " + bpm + " bpm");
 		return bpm;
 	}
 
-	protected void setEmphasizeBeatsFromCheckboxes() {
+	protected void setAccentBeatsFromCheckboxes() {
 		try {
 			LinkedList<Integer> l = new LinkedList<Integer>();
-			for (int i = 0; i < emphasizeBeatsCheckboxes.length && i < metronome.getBeatsPerMeasure(); i++) {
-				if (emphasizeBeatsCheckboxes[i].isSelected()) {
+			for (int i = 0; i < accentBeatsCheckboxes.length && i < metronome.getBeatsPerMeasure(); i++) {
+				if (accentBeatsCheckboxes[i].isSelected()) {
 					l.add(i+1);
 				}
 			}
-			metronome.setEmphasizeBeats(l.toArray(new Integer[0]));
+			metronome.setAccentBeats(l.toArray(new Integer[0]));
+			Arrays.sort(metronome.getAccentBeats());
 		} catch (InvalidMidiDataException e) {
 			e.printStackTrace();
 		}
 	}
 
 	protected void updateEmphasizeBeatsCheckBoxes() {
-		// always put an emphasis on the 1
-		emphasizeBeatsCheckboxes[0].setSelected(true);
-		emphasizeBeatsCheckboxes[0].setEnabled(false);
+		// always put an accent on the 1
+		accentBeatsCheckboxes[0].setSelected(true);
+		accentBeatsCheckboxes[0].setEnabled(false);
 
-		for (int i = 1; i < emphasizeBeatsCheckboxes.length; i++) {
-			emphasizeBeatsCheckboxes[i].setEnabled(emphasizeBeatsRadioButton.isSelected() && i < metronome.getBeatsPerMeasure());
+		for (int i = 1; i < accentBeatsCheckboxes.length; i++) {
+			accentBeatsCheckboxes[i].setEnabled(accentBeatsRadioButton.isSelected() && i < metronome.getBeatsPerMeasure());
 			// System.out.println("should checkbox[" + i + "] be visible? is " + i + "<" + metronome.getBeatsPerMeasure() + " ? " + (i < metronome.getBeatsPerMeasure())); 
-			emphasizeBeatsCheckboxes[i].setVisible(i < metronome.getBeatsPerMeasure());
+			accentBeatsCheckboxes[i].setVisible(i < metronome.getBeatsPerMeasure());
 			beatsRadios[i].setVisible(i < metronome.getBeatsPerMeasure());
 			
-			if (metronome.getEmphasizeBeats() != null) {
-				emphasizeBeatsCheckboxes[i].setSelected(MidiMetronome.contains(metronome.getEmphasizeBeats(), i+1));
+			if (metronome.getAccentBeats() != null) {
+				accentBeatsCheckboxes[i].setSelected(MidiMetronome.contains(metronome.getAccentBeats(), i+1));
 			} // else don't touch value that's there
 		}
 	}
@@ -231,10 +262,10 @@ class MetronomePanel extends JPanel implements TickListener {
 		updateEmphasizeBeatsCheckBoxes();
 	}
 
-	protected void enableEmphasizeBeats() {
+	protected void enableAccentBeats() {
 		tockValueCombo.setEnabled(false);
 		updateEmphasizeBeatsCheckBoxes();
-		setEmphasizeBeatsFromCheckboxes();
+		setAccentBeatsFromCheckboxes();
 	}
 	
 	protected void setTockValue(Object object) {
@@ -343,9 +374,10 @@ class MetronomePanel extends JPanel implements TickListener {
 			this.add(tempoLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			SpinnerNumberModel tempoSpinnerModel = new SpinnerNumberModel(100, 1, 999, 1);
 			tempoSpinner = new JSpinner(tempoSpinnerModel);
-			tempoSpinner.setFont(ourPlainFont);
+
 			tempoSpinnerEditor = new JSpinner.NumberEditor(tempoSpinner, "0.0");
 			tempoSpinner.setEditor(tempoSpinnerEditor);
+			tempoSpinnerEditor.getTextField().setFont(ourPlainFont);
 			this.add(tempoSpinner, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			JLabel tempoBpmLabel = new JLabel("BPM");
 			tempoBpmLabel.setFont(ourPlainFont);
@@ -379,7 +411,8 @@ class MetronomePanel extends JPanel implements TickListener {
 			this.add(beatsPerMeasureLabel, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 			SpinnerNumberModel beatsPerMeasureSpinnerModel = new SpinnerNumberModel(metronome.getBeatsPerMeasure(), 1, MAX_BEATS_PER_MEASURE, 1);
 			beatsPerMeasureSpinner = new JSpinner(beatsPerMeasureSpinnerModel);
-			beatsPerMeasureSpinner.setFont(ourPlainFont);
+			((JSpinner.DefaultEditor) beatsPerMeasureSpinner.getEditor()).getTextField().setFont(ourPlainFont);
+
 			this.add(beatsPerMeasureSpinner, new GridBagConstraints(2, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
 			
 			gridx += 1;
@@ -403,18 +436,18 @@ class MetronomePanel extends JPanel implements TickListener {
 			this.add(tockValueCombo, new GridBagConstraints(2, gridx, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
 			gridx += 2;
-			emphasizeBeatsRadioButton = new JRadioButton("Accent beats:");
-			this.add(emphasizeBeatsRadioButton, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-			emphasizeBeatsRadioButton.setFont(ourPlainFont);
+			accentBeatsRadioButton = new JRadioButton("Accent beats:");
+			this.add(accentBeatsRadioButton, new GridBagConstraints(0, gridx, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			accentBeatsRadioButton.setFont(ourPlainFont);
 			JPanel emphasizeBeatsPanel = new JPanel();
 			FlowLayout emphasizeBeatsPanelLayout = new FlowLayout();
 			emphasizeBeatsPanelLayout.setHgap(0);
 			emphasizeBeatsPanel.setLayout(emphasizeBeatsPanelLayout);
 			this.add(emphasizeBeatsPanel, new GridBagConstraints(0, gridx+1, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-			emphasizeBeatsCheckboxes = new JCheckBox[MAX_BEATS_PER_MEASURE];
-			for (int i = 0; i < emphasizeBeatsCheckboxes.length; i++) {
-				emphasizeBeatsCheckboxes[i] = new JCheckBox();
-				emphasizeBeatsPanel.add(emphasizeBeatsCheckboxes[i]);
+			accentBeatsCheckboxes = new JCheckBox[MAX_BEATS_PER_MEASURE];
+			for (int i = 0; i < accentBeatsCheckboxes.length; i++) {
+				accentBeatsCheckboxes[i] = new JCheckBox();
+				emphasizeBeatsPanel.add(accentBeatsCheckboxes[i]);
 			}
 
 			JPanel panel = new JPanel();
@@ -432,10 +465,10 @@ class MetronomePanel extends JPanel implements TickListener {
 			}
 
 			gridx += 3;
-			onOffButton = new JToggleButton();
-			onOffButton.setText("start/stop");
-			onOffButton.setFont(ourPlainFont);
-			this.add(onOffButton, new GridBagConstraints(0, gridx, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+			startStopButton = new JToggleButton();
+			startStopButton.setText("start/stop");
+			startStopButton.setFont(ourPlainFont);
+			this.add(startStopButton, new GridBagConstraints(0, gridx, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
 			gridx++;
 			link = new JLabel("<html><body><u>link to this metronome setting</u></body></html>");
@@ -450,20 +483,16 @@ class MetronomePanel extends JPanel implements TickListener {
 
 	// called by MidiMetronome on tick
 	public void tock(final long tock) {
-		// 	System.err.println(getClass().getName() + ".tick() SwingUtilities.isEventDispatchThread()=" + SwingUtilities.isEventDispatchThread());
-		
 		final int tocksPerBeat = metronome.getTocksPerBeat();
-		if (metronome.getEmphasizeBeats() != null) {
+		if (metronome.getAccentBeats() != null) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					// System.err.println(getClass().getName() + ".run() SwingUtilities.isEventDispatchThread()=" + SwingUtilities.isEventDispatchThread() + " beatsRadios[" + (int) (tock-1) + "]=" + beatsRadios[(int) (tock-1)]);
 					beatsRadios[(int) (tock-1)].setSelected(true);
 				}
 			});
 		} else if ((tock-1) % tocksPerBeat == 0) {
 			SwingUtilities.invokeLater(new Runnable() {
 				public void run() {
-					// System.err.println(getClass().getName() + ".run() SwingUtilities.isEventDispatchThread()=" + SwingUtilities.isEventDispatchThread() + " beatsRadios[" + (int) (tock-1) / tocksPerBeat + "]=" + beatsRadios[(int) (tock-1)]);
 					beatsRadios[(int) (tock-1) / tocksPerBeat].setSelected(true);
 				}
 			});

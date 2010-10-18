@@ -33,7 +33,7 @@ public class MidiMetronome {
 	protected int beatsPerMeasure = 4;
 	protected NoteValue beatValue = NoteValue.QUARTER_NOTE;
 	protected NoteValue tockValue = NoteValue.SIXTEENTH_NOTE;
-	protected Integer[] emphasizeBeats = null;
+	protected Integer[] accentBeats = null;
 	
 	protected Sequencer sequencer;
 	protected Synthesizer synth;
@@ -91,7 +91,7 @@ public class MidiMetronome {
 	}
 
 	protected Sequence makeSequence() throws InvalidMidiDataException {
-		if (emphasizeBeats != null) {
+		if (accentBeats != null) {
 			return makeBalkanSequence();
 		} else {
 			return makeNormalSequance();
@@ -136,7 +136,7 @@ public class MidiMetronome {
 		// first beat of measure
 		track.add(new MidiEvent(new MetronomeTick(1, TICK_MIDI_KEY, ON_THE_ONE_VELOCITY), 0));
 		for (int beat = 2; beat <= beatsPerMeasure; beat++) {
-			if (contains(emphasizeBeats, beat)) {
+			if (contains(accentBeats, beat)) {
 				track.add(new MidiEvent(new MetronomeTick(beat, TICK_MIDI_KEY, TICK_VELOCITY), beat - 1));
 			} else {
 				track.add(new MidiEvent(new MetronomeTick(beat, TOCK_MIDI_KEY, TOCK_VELOCITY), beat - 1));
@@ -168,7 +168,7 @@ public class MidiMetronome {
 		if (!sequencer.isRunning()) {
 			sequencer.setSequence(makeSequence());
 			sequencer.setTempoInBPM((float) tempoBpm);
-			System.out.println(getTimesigString() + " at " + tempoBpm + "bpm with tockValue=" + tockValue + " emphasizeBeats=" + Arrays.toString(emphasizeBeats));
+			System.out.println(getTimesigString() + " at " + tempoBpm + "bpm with tockValue=" + tockValue + " emphasizeBeats=" + Arrays.toString(accentBeats));
 			sequencer.start();
 		}
 	}
@@ -177,6 +177,10 @@ public class MidiMetronome {
 		if (sequencer.isRunning()) {
 			sequencer.stop();
 		}
+	}
+
+	public boolean isRunning() {
+		return sequencer.isRunning();
 	}
 	
 	protected static class MetronomeTick extends ShortMessage {
@@ -198,12 +202,12 @@ public class MidiMetronome {
 		maybeRestart();
 
 		if (sequencer.isRunning()) {
-			System.out.println(getTimesigString() + " at " + bpm + "bpm with tockValue=" + tockValue + " emphasizeBeats=" + Arrays.toString(emphasizeBeats));
+			System.out.println(getTimesigString() + " at " + bpm + "bpm with tockValue=" + tockValue + " emphasizeBeats=" + Arrays.toString(accentBeats));
 		}
 	}
 
-	protected void setEmphasizeBeats(Integer[] integers) throws InvalidMidiDataException {
-		this.emphasizeBeats = integers;
+	protected void setAccentBeats(Integer[] integers) throws InvalidMidiDataException {
+		this.accentBeats = integers;
 		maybeRestart();
 	}
 
@@ -229,7 +233,7 @@ public class MidiMetronome {
 	}
 	
 	protected void setTockValue(NoteValue tockValue) throws InvalidMidiDataException {
-		this.emphasizeBeats = null;
+		this.accentBeats = null;
 		this.tockValue = tockValue;
 		maybeRestart();
 	}
@@ -254,16 +258,16 @@ public class MidiMetronome {
 		return tockValue;
 	}
 
-	public Integer[] getEmphasizeBeats() {
-		return emphasizeBeats;
+	public Integer[] getAccentBeats() {
+		return accentBeats;
 	}
 
 	// if using ghost beats, the number of beats per measure;  
 	// else if using accent beats, the number of accent beats, including the first beat 
 	public int getTapsPerMeasure() {
-		if (emphasizeBeats != null) {
+		if (accentBeats != null) {
 			int count = 1;
-			for (int n: emphasizeBeats) {
+			for (int n: accentBeats) {
 				if (n > 1 && n <= beatsPerMeasure) {
 					count++;
 				}
