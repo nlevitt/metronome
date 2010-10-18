@@ -380,7 +380,7 @@ class MetronomePanel extends JPanel implements TickListener {
 			this.setLayout(layout);
 
 			layout.rowWeights = new double[] {0.0, 0, 0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0, 0.1, 0.0};
-			layout.rowHeights = new int[] {15, 15, 15, 15, 25, 11, 25, 10, 5, 15, 13, 25, 13, 25, 14, 12, 7, 25};
+			layout.rowHeights = new int[] {15, 15, 15, 15, 25, 11, 25, 10, 5, 15, 13, 25, 13, 25, 14, 12, 7, 25, 15, 15};
 			layout.columnWeights = new double[] {0.1, 0.0, 0.0, 0.0, 0.1};
 			layout.columnWidths = new int[] {7, 10, 53, 10, 7};
 
@@ -504,7 +504,6 @@ class MetronomePanel extends JPanel implements TickListener {
 			link.setForeground(Color.BLUE);
 			link.setFont(ourPlainFont);
 			this.add(link, new GridBagConstraints(0, gridx, 5, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
