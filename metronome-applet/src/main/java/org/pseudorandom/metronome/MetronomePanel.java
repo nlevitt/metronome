@@ -175,7 +175,6 @@ class MetronomePanel extends JPanel implements TickListener {
 	        tempoSpinnerEditor.getTextField().setBackground(Color.BLUE);
 		}
 		beatsRadios[whichBeat(when) - 1].setSelected(true);
-		System.err.println("tap - beat " + whichBeat(when) + " of the measure");
 		
 		// set a timer to stop waiting for clicks
 		if (tapFinishTimer != null) {
@@ -197,15 +196,45 @@ class MetronomePanel extends JPanel implements TickListener {
 		1600);  // XXX this should be computed
 	}
 	
+	protected long expectedTapTime(int beatOfMeasure) {
+		int fullMeasures = tapCount / metronome.getTapsPerMeasure();
+		int alltimeBeat = fullMeasures * metronome.getBeatsPerMeasure() + beatOfMeasure - 1;
+		return (long) (firstTap + alltimeBeat * 60000.0 / metronome.getTempoBpm());
+	}
+
 	protected int whichBeat(long when) {
+		
 		if (tapCount < 0) {
 			return -1;
-		} else if (metronome.getAccentBeats() != null) {
-			// XXX this assumes that metronome.getAccentBeats() contains beat "1" which is not guaranteed
-			return metronome.getAccentBeats()[tapCount % metronome.getTapsPerMeasure()];
-		} else {
-			return 1 + tapCount % metronome.getBeatsPerMeasure();
 		}
+		
+		// when do we expect this tap if user didn't miss one?
+		int goodTapBeatOfMeasure;
+		if (metronome.getAccentBeats() != null) {
+			// XXX this assumes that metronome.getAccentBeats() contains beat "1" which is not guaranteed
+			goodTapBeatOfMeasure = metronome.getAccentBeats()[tapCount % metronome.getTapsPerMeasure()];
+		} else {
+			goodTapBeatOfMeasure = 1 + tapCount % metronome.getBeatsPerMeasure();
+		}
+		long goodTapExpectedTime = expectedTapTime(goodTapBeatOfMeasure);
+
+		// when do we expect this tap if user DID miss one?
+		int skippedOneTapBeatOfMeasure;
+		if (metronome.getAccentBeats() != null) {
+			// XXX this assumes that metronome.getAccentBeats() contains beat "1" which is not guaranteed
+			skippedOneTapBeatOfMeasure = metronome.getAccentBeats()[(tapCount+1) % metronome.getTapsPerMeasure()];
+		} else {
+			skippedOneTapBeatOfMeasure = 1 + (tapCount+1) % metronome.getBeatsPerMeasure();
+		}
+		long skippedOneTapExpectedTime = expectedTapTime(skippedOneTapBeatOfMeasure);
+		
+		if (Math.abs(when - goodTapExpectedTime) > 2 * Math.abs(when - skippedOneTapExpectedTime)) {
+			System.err.println("looks like we skipped a beat actual=" + when + " goodExpected=" + goodTapExpectedTime + " (off by " + (when - goodTapExpectedTime) + ") skippedOneExpected=" + skippedOneTapExpectedTime + " (off by " + (when - skippedOneTapExpectedTime) + ")");
+			tapCount++;
+			return skippedOneTapBeatOfMeasure;
+		}
+		
+		return goodTapBeatOfMeasure;
 	}
 
 	protected double calcTempoBpm(long lastTap) {
