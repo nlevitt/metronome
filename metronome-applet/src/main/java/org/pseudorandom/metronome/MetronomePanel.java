@@ -228,6 +228,7 @@ class MetronomePanel extends JPanel implements TickListener {
 		}
 		long skippedOneTapExpectedTime = expectedTapTime(skippedOneTapBeatOfMeasure);
 		
+		System.err.println("actual=" + when + " goodExpected=" + goodTapExpectedTime + " (off by " + (when - goodTapExpectedTime) + ") skippedOneExpected=" + skippedOneTapExpectedTime + " (off by " + (when - skippedOneTapExpectedTime) + ")");
 		if (Math.abs(when - goodTapExpectedTime) > 2 * Math.abs(when - skippedOneTapExpectedTime)) {
 			System.err.println("looks like we skipped a beat actual=" + when + " goodExpected=" + goodTapExpectedTime + " (off by " + (when - goodTapExpectedTime) + ") skippedOneExpected=" + skippedOneTapExpectedTime + " (off by " + (when - skippedOneTapExpectedTime) + ")");
 			tapCount++;
@@ -238,15 +239,9 @@ class MetronomePanel extends JPanel implements TickListener {
 	}
 
 	protected double calcTempoBpm(long lastTap) {
-		long beats;
-		if (metronome.getAccentBeats() != null) {
-			// beats = tapCount * ((double) metronome.getBeatsPerMeasure() / metronome.getTapsPerMeasure());
-			int fullMeasures = tapCount / metronome.getTapsPerMeasure();
-			int beatOfMeasure = whichBeat(lastTap);
-			beats = fullMeasures * metronome.getBeatsPerMeasure() + beatOfMeasure - 1;
-		} else {
-			beats = tapCount;
-		}
+		int fullMeasures = tapCount / metronome.getTapsPerMeasure();
+		long beats = fullMeasures * metronome.getBeatsPerMeasure() + whichBeat(lastTap) - 1;
+
 		double minutes = (lastTap - firstTap) / 60000.0; 
 		double bpm = beats / minutes;
 		// System.out.println(new Date() + " " + clickCount + " clicks in " + minutes + " minutes comes to " + bpm + " bpm");
